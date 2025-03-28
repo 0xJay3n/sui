@@ -14166,7 +14166,6 @@ dependencies = [
  "sui-indexer-alt-metrics",
  "sui-pg-db",
  "sui-rpc-api",
- "sui-sql-macro",
  "sui-storage",
  "sui-synthetic-ingestion",
  "sui-types",

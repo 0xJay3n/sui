@@ -7,8 +7,8 @@ use anyhow::{Context, Result};
 use diesel::{ExpressionMethods, QueryDsl};
 use diesel_async::RunQueryDsl;
 use sui_indexer_alt_framework::{
-    db::{Connection, Db},
     pipeline::{concurrent::Handler, Processor},
+    postgres::{Connection, Db},
     types::full_checkpoint_content::CheckpointData,
 };
 use sui_indexer_alt_schema::{events::StoredEvStructInst, schema::ev_struct_inst};
@@ -117,7 +117,7 @@ mod tests {
     #[tokio::test]
     async fn test_ev_struct_inst_pruning_complains_if_no_mapping() {
         let (indexer, _db) = Indexer::new_for_testing(&MIGRATIONS).await;
-        let mut conn = indexer.db().connect().await.unwrap();
+        let mut conn = indexer.store().connect().await.unwrap();
 
         let result = EvStructInst.prune(0, 2, &mut conn).await;
 
@@ -131,7 +131,7 @@ mod tests {
     #[tokio::test]
     async fn test_ev_struct_inst_process_no_events() {
         let (indexer, _db) = Indexer::new_for_testing(&MIGRATIONS).await;
-        let mut conn = indexer.db().connect().await.unwrap();
+        let mut conn = indexer.store().connect().await.unwrap();
 
         let checkpoint = Arc::new(
             TestCheckpointDataBuilder::new(0)
@@ -149,7 +149,7 @@ mod tests {
     #[tokio::test]
     async fn test_ev_struct_inst_process_single_event() {
         let (indexer, _db) = Indexer::new_for_testing(&MIGRATIONS).await;
-        let mut conn = indexer.db().connect().await.unwrap();
+        let mut conn = indexer.store().connect().await.unwrap();
 
         let checkpoint = Arc::new(
             TestCheckpointDataBuilder::new(0)
@@ -170,7 +170,7 @@ mod tests {
     #[tokio::test]
     async fn test_ev_struct_inst_prune_events() {
         let (indexer, _db) = Indexer::new_for_testing(&MIGRATIONS).await;
-        let mut conn = indexer.db().connect().await.unwrap();
+        let mut conn = indexer.store().connect().await.unwrap();
 
         // 0th checkpoint has no events
         let mut builder = TestCheckpointDataBuilder::new(0);

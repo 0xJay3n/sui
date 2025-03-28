@@ -5,7 +5,7 @@ use std::ops::{Deref, DerefMut};
 use std::time::Duration;
 
 use anyhow::anyhow;
-use diesel::migration::{MigrationSource, MigrationVersion};
+use diesel::migration::{Migration, MigrationSource, MigrationVersion};
 use diesel::pg::Pg;
 use diesel_async::async_connection_wrapper::AsyncConnectionWrapper;
 use diesel_async::{
@@ -21,6 +21,7 @@ use tracing::info;
 use url::Url;
 
 pub use sui_field_count::FieldCount;
+pub use sui_sql_macro::sql;
 
 mod model;
 mod pg_store;
@@ -217,6 +218,25 @@ async fn pool(database_url: Url, args: DbArgs) -> anyhow::Result<Pool<AsyncPgCon
         .connection_timeout(args.connection_timeout())
         .build(manager)
         .await?)
+}
+
+/// Returns new migrations derived from the combination of provided migrations and migrations
+/// defined in this crate.
+pub fn migrations(
+    migrations: Option<&'static EmbeddedMigrations>,
+) -> impl MigrationSource<Pg> + Send + Sync + 'static {
+    struct Migrations(Option<&'static EmbeddedMigrations>);
+    impl MigrationSource<Pg> for Migrations {
+        fn migrations(&self) -> diesel::migration::Result<Vec<Box<dyn Migration<Pg>>>> {
+            let mut migrations = MIGRATIONS.migrations()?;
+            if let Some(more_migrations) = self.0 {
+                migrations.extend(more_migrations.migrations()?);
+            }
+            Ok(migrations)
+        }
+    }
+
+    Migrations(migrations)
 }
 
 #[cfg(test)]
