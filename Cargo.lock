@@ -14161,6 +14161,7 @@ dependencies = [
  "reqwest 0.12.9",
  "scoped-futures",
  "serde",
+ "sui-field-count",
  "sui-indexer-alt-framework-store-traits",
  "sui-indexer-alt-metrics",
  "sui-pg-db",
@@ -14184,7 +14185,7 @@ dependencies = [
 
 [[package]]
 name = "sui-indexer-alt-framework-store-traits"
-version = "1.47.0"
+version = "1.48.0"
 dependencies = [
  "anyhow",
  "async-trait",
